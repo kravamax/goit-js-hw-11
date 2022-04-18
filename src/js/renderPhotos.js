@@ -1,9 +1,8 @@
 import { getRefs } from '../getRefs';
 const { gallery } = getRefs();
 
-//Добавить в деструктуризацию largeImageURL для LightBox
-export function renderPhotos(array) {
-  const markup = array
+export function renderPhotos(photosArray) {
+  const markup = photosArray
     .map(({ largeImageURL, webformatURL, tags, likes, views, comments, downloads }) => {
       return `
         <div class="photo-card">            

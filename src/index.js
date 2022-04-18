@@ -1,13 +1,14 @@
 import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
-import axios from 'axios';
+// import axios from 'axios';
 
 import { getRefs } from './getRefs';
 const { searchForm, gallery, loadMoreBtn } = getRefs();
-import * as APIService from './js/api/api';
+// import * as APIService from './js/api/api';
 import { renderPhotos } from './js/renderPhotos';
 // import { loadMore } from './js/loadMore';
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
+import APIService from './js/api/api-service';
 
 // const { height: cardHeight } = document
 //   .querySelector('.gallery')
@@ -19,41 +20,39 @@ import { Notify } from 'notiflix/build/notiflix-notify-aio';
 // });
 
 searchForm.addEventListener('submit', onSearch);
+loadMoreBtn.addEventListener('click', onLoadMore);
+loadMoreBtn.classList.add('is-hidden');
+
+const API = new APIService();
 
 function onSearch(e) {
   e.preventDefault();
   gallery.innerHTML = '';
 
-  APIService.APIObj.numPage = 1;
-  APIService.APIObj.searchQuery = e.currentTarget.searchQuery.value;
+  API.query = e.currentTarget.searchQuery.value;
+  API.resetPage();
 
-  // console.log(APIService.searchQuery);
-
-  APIService.fetchImages()
-    .then(data => {
-      console.log(data.hits.length);
-
-      APIService.APIObj.totalHits = data.totalHits;
-
-      if (!data.hits.length) {
+  API.fetchImages()
+    .then(({ totalHits, hits }) => {
+      if (!hits.length) {
         throw new Error(error);
       }
 
-      Notify.info(`Hooray! We found ${data.totalHits} images.`);
-      return data;
+      Notify.info(`Hooray! We found ${totalHits} images.`);
+
+      return { totalHits, hits };
     })
-    .then(data => {
-      if (APIService.APIObj.totalHits >= APIService.pageSize) {
-        setTimeout(() => {
-          loadMoreBtn.classList.remove('is-hidden');
-        }, 500);
+    .then(({ totalHits, hits }) => {
+      console.log(hits);
+
+      console.log('API.pageSize', API.pageSize, 'totalHits', totalHits);
+      if (totalHits >= API.pageSize) {
+        loadMoreBtn.classList.remove('is-hidden');
       }
-      console.log(APIService.totalPage);
 
-      console.log('total hits in 2 then', APIService.APIObj.totalHits);
-
-      return renderPhotos(data.hits);
+      return hits;
     })
+    .then(renderPhotos)
     .catch(error => {
       Notify.failure('Sorry, there are no images matching your search query. Please try again.');
       console.log(error);
@@ -61,9 +60,6 @@ function onSearch(e) {
 
   e.currentTarget.reset();
 }
-
-loadMoreBtn.addEventListener('click', onLoadMore);
-loadMoreBtn.classList.add('is-hidden');
 
 gallery.addEventListener('click', e => {
   e.preventDefault();
@@ -75,24 +71,23 @@ gallery.addEventListener('click', e => {
   console.log(e.target.parentNode.href);
 });
 
-function onLoadMore(e) {
-  APIService.fetchImages()
-    .then(data => {
-      if (APIService.APIObj.numPage > Math.ceil(data.totalHits / APIService.pageSize)) {
-        // gallerySimpleBox.refresh();
+function onLoadMore() {
+  API.fetchImages()
+    .then(({ hits }) => {
+      console.log('API.pageNumber', API.pageNumber);
+      console.log('API.totalPage', API.totalPage);
 
-        renderPhotos(data.hits);
+      if (API.pageNumber > API.totalPage) {
+        renderPhotos(hits);
         loadMoreBtn.classList.add('is-hidden');
-
         throw new Error(error);
       }
 
-      // gallerySimpleBox.refresh();
-      return renderPhotos(data.hits);
+      return hits;
     })
+    .then(renderPhotos)
     .catch(error => {
-      console.log(error);
-
       Notify.failure(`We're sorry, but you've reached the end of search results.`);
+      console.log(error);
     });
 }
