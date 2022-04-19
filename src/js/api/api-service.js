@@ -37,10 +37,6 @@ export default class APIService {
         this.totalPage = Math.ceil(this.totalHits / this.pageSize);
         this.incrementPage();
 
-        console.log(this);
-
-        console.log('Total page:', this.totalPage);
-
         return { totalHits, hits };
       });
   }

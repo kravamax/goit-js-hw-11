@@ -1,5 +1,5 @@
-import SimpleLightbox from 'simplelightbox';
-import 'simplelightbox/dist/simple-lightbox.min.css';
+// import SimpleLightbox from 'simplelightbox';
+// import 'simplelightbox/dist/simple-lightbox.min.css';
 // import axios from 'axios';
 
 import { getRefs } from './getRefs';
@@ -10,20 +10,11 @@ import { renderPhotos } from './js/renderPhotos';
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
 import APIService from './js/api/api-service';
 
-// const { height: cardHeight } = document
-//   .querySelector('.gallery')
-//   .firstElementChild.getBoundingClientRect();
-
-// window.scrollBy({
-//   top: cardHeight * 2,
-//   behavior: 'smooth',
-// });
+const API = new APIService();
 
 searchForm.addEventListener('submit', onSearch);
 loadMoreBtn.addEventListener('click', onLoadMore);
 loadMoreBtn.classList.add('is-hidden');
-
-const API = new APIService();
 
 function onSearch(e) {
   e.preventDefault();
@@ -38,14 +29,14 @@ function onSearch(e) {
         throw new Error(error);
       }
 
-      Notify.info(`Hooray! We found ${totalHits} images.`);
+      Notify.success(`Hooray! We found ${totalHits} images.`);
 
       return { totalHits, hits };
     })
     .then(({ totalHits, hits }) => {
-      console.log(hits);
+      // console.log(hits);
 
-      console.log('API.pageSize', API.pageSize, 'totalHits', totalHits);
+      // console.log('API.pageSize', API.pageSize, 'totalHits', totalHits);
       if (totalHits >= API.pageSize) {
         loadMoreBtn.classList.remove('is-hidden');
       }
@@ -61,21 +52,14 @@ function onSearch(e) {
   e.currentTarget.reset();
 }
 
-gallery.addEventListener('click', e => {
-  e.preventDefault();
-
-  let gallerySimpleBox = new SimpleLightbox('.gallery a');
-
-  gallerySimpleBox.on('show.simplelightbox', function () {});
-
-  console.log(e.target.parentNode.href);
-});
-
 function onLoadMore() {
   API.fetchImages()
     .then(({ hits }) => {
-      console.log('API.pageNumber', API.pageNumber);
-      console.log('API.totalPage', API.totalPage);
+      // console.log('API.pageNumber', API.pageNumber);
+      // console.log('API.totalPage', API.totalPage);
+
+      // let modal = new SimpleLightbox('.gallery a');
+      // modal.refresh();
 
       if (API.pageNumber > API.totalPage) {
         renderPhotos(hits);
@@ -86,8 +70,42 @@ function onLoadMore() {
       return hits;
     })
     .then(renderPhotos)
+    .then(scrollDown)
     .catch(error => {
       Notify.failure(`We're sorry, but you've reached the end of search results.`);
       console.log(error);
     });
+}
+
+gallery.addEventListener('click', e => {
+  e.preventDefault();
+
+  // let modal = new SimpleLightbox('.gallery a', {});
+  // modal.on('show.simplelightbox', function () {});
+
+  console.log(e.target.parentNode);
+  console.log(e.currentTarget);
+
+  // if (!(e.target !== e.currentTarget)) {
+  //   return;
+  // }
+
+  // openModal();
+
+  console.log(e.target.parentNode.href);
+});
+
+// function openModal() {
+//   modal.on('show.simplelightbox', function () {});
+// }
+
+function scrollDown() {
+  const { height: cardHeight } = document
+    .querySelector('.gallery')
+    .firstElementChild.getBoundingClientRect();
+
+  window.scrollBy({
+    top: cardHeight.toFixed() * 2,
+    behavior: 'smooth',
+  });
 }
