@@ -1,5 +1,8 @@
-const BASE_URL = 'https://pixabay.com/api/';
+import axios from 'axios';
+
 const API_KEY = '26728738-d599205e790670b2a20ac6b2d';
+
+axios.defaults.baseURL = 'https://pixabay.com/api/';
 
 export default class APIService {
   totalHits = null;
@@ -11,7 +14,7 @@ export default class APIService {
     this.pageNumber = 1;
   }
 
-  fetchImages() {
+  async fetchImages() {
     const searchParams = new URLSearchParams({
       key: API_KEY,
       q: this.searchQuery,
@@ -22,23 +25,22 @@ export default class APIService {
       per_page: this.pageSize,
     });
 
-    const URL = `${BASE_URL}?${searchParams}`;
+    const URL = `?${searchParams}`;
 
-    return fetch(URL)
-      .then(response => {
-        if (!response.ok) {
-          throw new Error(`error: ${response.statusText}`);
-        }
+    try {
+      const response = await axios.get(URL);
+      const {
+        data: { totalHits, hits },
+      } = response;
 
-        return response.json();
-      })
-      .then(({ totalHits, hits }) => {
-        this.totalHits = totalHits;
-        this.totalPage = Math.ceil(this.totalHits / this.pageSize);
-        this.incrementPage();
+      this.totalHits = totalHits;
+      this.totalPage = Math.ceil(this.totalHits / this.pageSize);
+      this.incrementPage();
 
-        return { totalHits, hits };
-      });
+      return { totalHits, hits };
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   set query(newQuery) {

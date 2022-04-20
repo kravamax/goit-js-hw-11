@@ -1,6 +1,25 @@
 import { getRefs } from '../getRefs';
 const { gallery } = getRefs();
 
+numeral.register('locale', 'fr', {
+  delimiters: {
+    thousands: '',
+    decimal: '.',
+  },
+  abbreviations: {
+    thousand: 'k',
+    million: 'm+',
+    billion: 'b+',
+    trillion: 't+',
+  },
+  ordinal: function (number) {
+    return number === 1 ? 'er' : 'ème';
+  },
+});
+
+// switch between locales
+numeral.locale('fr');
+
 export function renderPhotos(photosArray) {
   const markup = photosArray
     .map(({ largeImageURL, webformatURL, tags, likes, views, comments, downloads }) => {
@@ -12,19 +31,19 @@ export function renderPhotos(photosArray) {
             <div class="info">
                 <p class="info-item">
                     <b>Likes</b>
-                    <span>${likes}</span>
+                    <span>${numeral(likes).format('0.a')}</span>
                 </p>
                 <p class="info-item">
                     <b>Views</b>
-                    <span>${views}</span>
+                    <span>${numeral(views).format('0.a')}</span>
                 </p>
                 <p class="info-item">
                     <b>Comments</b>
-                    <span>${comments}</span>
+                    <span>${numeral(comments).format('0.a')}</span>
                 </p>
                 <p class="info-item">
                     <b>Downloads </b>
-                    <span>${downloads}</span>
+                    <span>${numeral(downloads).format('0.a')}</span>
                 </p>
             </div>
         </div>

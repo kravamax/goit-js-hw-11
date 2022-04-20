@@ -1,103 +1,98 @@
-// import SimpleLightbox from 'simplelightbox';
-// import 'simplelightbox/dist/simple-lightbox.min.css';
-// import axios from 'axios';
+import SimpleLightbox from 'simplelightbox';
+import 'simplelightbox/dist/simple-lightbox.min.css';
 
 import { getRefs } from './getRefs';
 const { searchForm, gallery, loadMoreBtn } = getRefs();
-// import * as APIService from './js/api/api';
 import { renderPhotos } from './js/renderPhotos';
-// import { loadMore } from './js/loadMore';
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
 import APIService from './js/api/api-service';
 
 const API = new APIService();
+let modal = null;
 
 searchForm.addEventListener('submit', onSearch);
 loadMoreBtn.addEventListener('click', onLoadMore);
+gallery.addEventListener('click', onGalleryClick);
+
 loadMoreBtn.classList.add('is-hidden');
 
-function onSearch(e) {
+async function onSearch(e) {
   e.preventDefault();
-  gallery.innerHTML = '';
+  galleryMarkupReset();
 
   API.query = e.currentTarget.searchQuery.value;
   API.resetPage();
 
-  API.fetchImages()
-    .then(({ totalHits, hits }) => {
-      if (!hits.length) {
-        throw new Error(error);
-      }
+  try {
+    const response = await API.fetchImages();
+    const { hits, totalHits } = await response;
 
-      Notify.success(`Hooray! We found ${totalHits} images.`);
+    if (!hits.length) {
+      throw new Error(error);
+    }
 
-      return { totalHits, hits };
-    })
-    .then(({ totalHits, hits }) => {
-      // console.log(hits);
+    Notify.success(`Hooray! We found ${totalHits} images.`);
 
-      // console.log('API.pageSize', API.pageSize, 'totalHits', totalHits);
-      if (totalHits >= API.pageSize) {
-        loadMoreBtn.classList.remove('is-hidden');
-      }
+    const render = await renderPhotos(hits);
 
-      return hits;
-    })
-    .then(renderPhotos)
-    .catch(error => {
-      Notify.failure('Sorry, there are no images matching your search query. Please try again.');
-      console.log(error);
-    });
+    if (totalHits >= API.pageSize) {
+      loadMoreBtn.classList.remove('is-hidden');
+    }
 
-  e.currentTarget.reset();
+    await e.target.reset();
+    modal = new SimpleLightbox('.gallery a', {});
+
+    return render;
+  } catch (error) {
+    Notify.failure('Sorry, there are no images matching your search query. Please try again.');
+  }
 }
 
-function onLoadMore() {
-  API.fetchImages()
-    .then(({ hits }) => {
-      // console.log('API.pageNumber', API.pageNumber);
-      // console.log('API.totalPage', API.totalPage);
+async function onLoadMore() {
+  try {
+    const response = await API.fetchImages();
+    const { hits } = response;
+    modal.refresh();
 
-      // let modal = new SimpleLightbox('.gallery a');
-      // modal.refresh();
+    if (API.pageNumber > API.totalPage) {
+      loadMoreBtn.classList.add('is-hidden');
+      renderAndScroll(hits);
 
-      if (API.pageNumber > API.totalPage) {
-        renderPhotos(hits);
-        loadMoreBtn.classList.add('is-hidden');
-        throw new Error(error);
-      }
+      throw new Error(error);
+    }
 
-      return hits;
-    })
-    .then(renderPhotos)
-    .then(scrollDown)
-    .catch(error => {
+    renderAndScroll(hits);
+
+    modal.refresh();
+  } catch (error) {
+    setTimeout(() => {
       Notify.failure(`We're sorry, but you've reached the end of search results.`);
-      console.log(error);
-    });
+    }, 1500);
+  }
 }
 
-gallery.addEventListener('click', e => {
+function onGalleryClick(e) {
   e.preventDefault();
 
-  // let modal = new SimpleLightbox('.gallery a', {});
-  // modal.on('show.simplelightbox', function () {});
+  if (!(e.target !== e.currentTarget)) {
+    return;
+  }
 
-  console.log(e.target.parentNode);
-  console.log(e.currentTarget);
+  openModal();
+}
 
-  // if (!(e.target !== e.currentTarget)) {
-  //   return;
-  // }
+function openModal() {
+  modal.on('show.simplelightbox', function () {});
+}
 
-  // openModal();
+function galleryMarkupReset() {
+  gallery.innerHTML = '';
+}
 
-  console.log(e.target.parentNode.href);
-});
-
-// function openModal() {
-//   modal.on('show.simplelightbox', function () {});
-// }
+async function renderAndScroll(hits) {
+  await renderPhotos(hits);
+  await scrollDown();
+}
 
 function scrollDown() {
   const { height: cardHeight } = document
