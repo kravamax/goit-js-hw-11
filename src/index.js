@@ -2,7 +2,7 @@ import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
 
 import { getRefs } from './getRefs';
-const { searchForm, gallery, loadMoreBtn } = getRefs();
+const { searchForm, gallery, loadMoreBtn, containerSearchForm } = getRefs();
 import { renderPhotos } from './js/renderPhotos';
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
 import APIService from './js/api/api-service';
@@ -14,11 +14,16 @@ searchForm.addEventListener('submit', onSearch);
 loadMoreBtn.addEventListener('click', onLoadMore);
 gallery.addEventListener('click', onGalleryClick);
 
+window.addEventListener('scroll', opacitySearchForm);
+containerSearchForm.addEventListener('mouseover', containerSearcAppear);
+containerSearchForm.addEventListener('mouseout', containerSearchDisappear);
+
 loadMoreBtn.classList.add('is-hidden');
 
 async function onSearch(e) {
   e.preventDefault();
   galleryMarkupReset();
+  containerSearcAppear();
 
   API.query = e.currentTarget.searchQuery.value;
   API.resetPage();
@@ -50,6 +55,7 @@ async function onSearch(e) {
 
 async function onLoadMore() {
   try {
+    await containerSearchDisappear;
     const response = await API.fetchImages();
     const { hits } = response;
     modal.refresh();
@@ -61,9 +67,10 @@ async function onLoadMore() {
       throw new Error(error);
     }
 
-    renderAndScroll(hits);
+    await renderAndScroll(hits);
 
     modal.refresh();
+    loadMoreBtn.blur();
   } catch (error) {
     setTimeout(() => {
       Notify.failure(`We're sorry, but you've reached the end of search results.`);
@@ -103,4 +110,22 @@ function scrollDown() {
     top: cardHeight.toFixed() * 2,
     behavior: 'smooth',
   });
+}
+
+function opacitySearchForm() {
+  containerSearchForm.style.opacity = 1;
+
+  if (window.pageYOffset > 50) {
+    containerSearchForm.style.opacity = 0.8;
+  }
+}
+
+function containerSearcAppear() {
+  containerSearchForm.style.opacity = 1;
+}
+
+function containerSearchDisappear(e) {
+  if (window.pageYOffset > 50) {
+    containerSearchForm.style.opacity = 0.8;
+  }
 }

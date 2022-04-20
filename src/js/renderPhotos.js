@@ -1,24 +1,6 @@
 import { getRefs } from '../getRefs';
 const { gallery } = getRefs();
-
-numeral.register('locale', 'fr', {
-  delimiters: {
-    thousands: '',
-    decimal: '.',
-  },
-  abbreviations: {
-    thousand: 'k',
-    million: 'm+',
-    billion: 'b+',
-    trillion: 't+',
-  },
-  ordinal: function (number) {
-    return number === 1 ? 'er' : 'ème';
-  },
-});
-
-// switch between locales
-numeral.locale('fr');
+import numeral from 'numeral';
 
 export function renderPhotos(photosArray) {
   const markup = photosArray
@@ -28,7 +10,7 @@ export function renderPhotos(photosArray) {
             <div class="photo-card__img-container">
                 <a href="${largeImageURL}"><img class="photo-card__img" src="${webformatURL}" alt="${tags}" title=""/></a>
             </div>
-            <div class="info">
+            <div class="photo-card__info">
                 <p class="info-item">
                     <b>Likes</b>
                     <span>${numeral(likes).format('0.a')}</span>
