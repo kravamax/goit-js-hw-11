@@ -9,7 +9,7 @@ body {
   padding-top: 10px;
   padding-bottom: 10px;
 
-  background-color: rgb(55, 55, 148);
+  background-color: rgb(169, 171, 169);
 }
 
 .search-form {
@@ -38,21 +38,33 @@ body {
   border-top-left-radius: 0;
   border-bottom-left-radius: 0;
 
-  background-color: rgb(169, 171, 169);
+  background-color: rgb(55, 55, 148);
 
   cursor: pointer;
+}
+
+.search-form__btn:hover {
+  background-color: white;
+  color: rgb(55, 55, 148);
 }
 
 .search-form__input:focus,
 .search-form__btn:focus {
   outline: solid 3px rgb(138, 137, 137);
   outline-offset: -3px;
+
+  background-color: rgb(255, 255, 255);
 }
 
 .material-icons {
   display: flex;
   padding-top: 3px;
   color: rgb(255, 255, 255);
+}
+
+.search-form__btn:hover .material-icons,
+.search-form__btn:focus .material-icons {
+  color: rgb(55, 55, 148);
 }
 
 .gallery-container {
@@ -136,7 +148,8 @@ body {
   transition-duration: 0.4s;
 }
 
-.load-more-btn:hover {
+.load-more-btn:hover,
+.load-more-btn:focus {
   background-color: white;
   color: rgb(55, 55, 148);
 }
