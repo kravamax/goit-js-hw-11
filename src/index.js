@@ -22,7 +22,6 @@ hideLoadMoreBtn();
 
 async function onSearch(e) {
   e.preventDefault();
-  galleryMarkupReset();
   containerSearcAppear();
 
   if (e.currentTarget.searchQuery.value.trim() === '') {
@@ -30,6 +29,7 @@ async function onSearch(e) {
     Notify.info('You entered an empty string');
     return;
   }
+  galleryMarkupReset();
 
   API.query = e.currentTarget.searchQuery.value;
   API.resetPage();
