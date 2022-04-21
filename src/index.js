@@ -14,16 +14,22 @@ searchForm.addEventListener('submit', onSearch);
 loadMoreBtn.addEventListener('click', onLoadMore);
 gallery.addEventListener('click', onGalleryClick);
 
-window.addEventListener('scroll', opacitySearchForm);
+window.addEventListener('scroll', onScrollOpacitySearchForm);
 containerSearchForm.addEventListener('mouseover', containerSearcAppear);
 containerSearchForm.addEventListener('mouseout', containerSearchDisappear);
 
-loadMoreBtn.classList.add('is-hidden');
+hideLoadMoreBtn();
 
 async function onSearch(e) {
   e.preventDefault();
   galleryMarkupReset();
   containerSearcAppear();
+
+  if (e.currentTarget.searchQuery.value.trim() === '') {
+    hideLoadMoreBtn();
+    Notify.info('You entered an empty string');
+    return;
+  }
 
   API.query = e.currentTarget.searchQuery.value;
   API.resetPage();
@@ -61,7 +67,7 @@ async function onLoadMore() {
     modal.refresh();
 
     if (API.pageNumber > API.totalPage) {
-      loadMoreBtn.classList.add('is-hidden');
+      hideLoadMoreBtn();
       renderAndScroll(hits);
 
       throw new Error(error);
@@ -112,8 +118,8 @@ function scrollDown() {
   });
 }
 
-function opacitySearchForm() {
-  containerSearchForm.style.opacity = 1;
+function onScrollOpacitySearchForm() {
+  containerSearcAppear();
 
   if (window.pageYOffset > 50) {
     containerSearchForm.style.opacity = 0.8;
@@ -124,8 +130,12 @@ function containerSearcAppear() {
   containerSearchForm.style.opacity = 1;
 }
 
-function containerSearchDisappear(e) {
+function containerSearchDisappear() {
   if (window.pageYOffset > 50) {
     containerSearchForm.style.opacity = 0.8;
   }
+}
+
+function hideLoadMoreBtn() {
+  loadMoreBtn.classList.add('is-hidden');
 }
