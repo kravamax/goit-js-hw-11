@@ -23,6 +23,7 @@ hideLoadMoreBtn();
 async function onSearch(e) {
   e.preventDefault();
   containerSearcAppear();
+  hideLoadMoreBtn();
 
   if (e.currentTarget.searchQuery.value.trim() === '') {
     hideLoadMoreBtn();
@@ -55,6 +56,8 @@ async function onSearch(e) {
 
     return render;
   } catch (error) {
+    // hideLoadMoreBtn();
+
     Notify.failure('Sorry, there are no images matching your search query. Please try again.');
   }
 }
